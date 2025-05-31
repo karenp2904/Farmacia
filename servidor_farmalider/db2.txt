@@ -1,0 +1,55 @@
+CREATE TABLE products (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  category VARCHAR(50) NOT NULL,
+  presentation VARCHAR(30) NOT NULL,             -- Presentación principal (por ejemplo "Frasco")
+  units INTEGER NOT NULL,
+  expiration_date DATE,
+  description TEXT,
+  active_ingredient VARCHAR(255),
+  brand VARCHAR(255),
+  image TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE product_prices (
+  id SERIAL PRIMARY KEY,
+  product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+  presentacion VARCHAR(30) NOT NULL,  -- Por ejemplo: "Caja", "Unidad", etc.
+  precio NUMERIC(10, 2) NOT NULL
+);
+
+CREATE TABLE invoices (
+  id SERIAL PRIMARY KEY,
+  customer_name TEXT NOT NULL,
+  total_amount NUMERIC(10, 2) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE invoice_items (
+  id SERIAL PRIMARY KEY,
+  invoice_id INT REFERENCES invoices(id),
+  product_id INT REFERENCES products(id),
+  quantity INT NOT NULL,
+  presentation TEXT NOT NULL,
+  unit_price NUMERIC(10, 2) NOT NULL
+);
+
+
+
+-- Paracetamol con presentación principal "Frasco"
+INSERT INTO products (name, category, presentation, units, expiration_date, description, active_ingredient, brand)
+VALUES ('Paracetamol', 'medicamento', 'Frasco', 15, '2025-05-10', 'Antiinflamatorio para el dolor', 'Paracetamol', 'Marca A');
+
+-- Precios adicionales
+INSERT INTO product_prices (product_id, presentacion, precio)
+VALUES 
+  (1, 'Frasco', 2.50),
+  (1, 'Unidad', 0.50);
+
+-- Jeringa con presentación principal "Unidad"
+INSERT INTO products (name, category, presentation, units, description, brand)
+VALUES ('Jeringa 5ml', 'equipo', 'Unidad', 120, 'Jeringa para inyecciones', 'Marca A');
+
+INSERT INTO product_prices (product_id, presentacion, precio)
+VALUES 
+  (2, 'Unidad', 0.80);

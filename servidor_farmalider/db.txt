@@ -1,0 +1,23 @@
+-- Crear la tabla de productos 
+CREATE TABLE products (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,                    -- Nombre del producto
+  category VARCHAR(50) NOT NULL,                 -- Categoría (medicamento, insumo, equipo...)
+  presentation VARCHAR(30) NOT NULL,             -- Presentación (frasco, pastilla, caja...)
+  units INTEGER NOT NULL,                        -- Stock disponible
+  unit_price NUMERIC(10, 2) NOT NULL,            -- Precio por unidad
+  expiration_date DATE,                          -- Fecha de vencimiento (NULL si no aplica)
+  description TEXT,                              -- Descripción del producto
+  active_ingredient VARCHAR(255),                -- Principio activo del producto
+  brand VARCHAR(255),                            -- Marca del producto
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Fecha de creación
+);
+
+-- Insertar algunos productos de ejemplo
+INSERT INTO products (name, category, presentation, units, unit_price, expiration_date, description, active_ingredient, brand)
+VALUES
+  ('Paracetamol', 'medicamento', 'frasco', 15, 2.50, '2025-05-10', 'Antiinflamatorio para el dolor', 'Paracetamol', 'Marca A'),
+  ('Pañales bebé M', 'insumo', 'paquete', 40, 12.00, NULL, 'Pañales desechables para bebés', NULL, 'Marca B'),
+  ('Jeringa 5ml', 'equipo', 'unidad', 120, 0.80, NULL, 'Jeringa para inyecciones', NULL, 'Marca A'),
+  ('Antibiótico X', 'medicamento', 'caja', 30, 18.50, '2025-06-20', 'Antibiótico de amplio espectro', 'Amoxicilina', 'Marca B');
+
