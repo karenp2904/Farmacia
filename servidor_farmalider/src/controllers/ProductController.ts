@@ -51,6 +51,27 @@ class ProductController {
       res.status(500).send('Error al actualizar el producto');
     }
   }
+  
+  async updateField(req: Request, res: Response): Promise<void> {
+    const { id, field, value } = req.body;
+    
+    if (!id || !field || typeof value === 'undefined') {
+      res.status(400).send('Datos incompletos');
+      return;
+    }
+    
+    try {
+      const updated = await ProductService.updateField(Number(id), field, value);
+      if (!updated) {
+        res.status(404).send('Producto no encontrado');
+      } else {
+        res.status(200).json(updated);
+      }
+    } catch (error) {
+      console.error('Error al actualizar campo:', error);
+      res.status(500).send('Error del servidor');
+    }
+  }
 
   async deleteProduct(req: Request, res: Response): Promise<void> {
     const { id } = req.params;

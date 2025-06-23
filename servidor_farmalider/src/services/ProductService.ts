@@ -128,54 +128,89 @@ export class ProductService {
 
 
   async updateProduct(id: number, product: Product): Promise<Product | null> {
-  const {
-    name, category, presentation, units, expiration_date,
-    description, active_ingredient, brand, image, presentation_prices
-  } = product;
+    const {
+      name, category, presentation, units, expiration_date,
+      description, active_ingredient, brand, image, presentation_prices
+    } = product;
 
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
 
-    // Actualizar el producto
-    await client.query(`
-      UPDATE products
-      SET name = $1, category = $2, presentation = $3, units = $4, expiration_date = $5,
-          description = $6, active_ingredient = $7, brand = $8, image = $9
-      WHERE id = $10
-    `, [
-      name,
-      category,
-      presentation,
-      units,
-      expiration_date,
-      description ?? null,
-      active_ingredient ?? null,
-      brand ?? null,
-      image ?? null,
-      id
-    ]);
-
-    // Eliminar precios anteriores
-    await client.query(`DELETE FROM product_prices WHERE product_id = $1`, [id]);
-
-    // Insertar los nuevos precios
-    for (const p of presentation_prices) {
+      // Actualizar el producto
       await client.query(`
-        INSERT INTO product_prices (product_id, presentacion, precio)
-        VALUES ($1, $2, $3)
-      `, [id, p.presentacion, p.precio]);
+        UPDATE products
+        SET name = $1, category = $2, presentation = $3, units = $4, expiration_date = $5,
+            description = $6, active_ingredient = $7, brand = $8, image = $9
+        WHERE id = $10
+      `, [
+        name,
+        category,
+        presentation,
+        units,
+        expiration_date,
+        description ?? null,
+        active_ingredient ?? null,
+        brand ?? null,
+        image ?? null,
+        id
+      ]);
+
+      // Eliminar precios anteriores
+      await client.query(`DELETE FROM product_prices WHERE product_id = $1`, [id]);
+
+      // Insertar los nuevos precios
+      for (const p of presentation_prices) {
+        await client.query(`
+          INSERT INTO product_prices (product_id, presentacion, precio)
+          VALUES ($1, $2, $3)
+        `, [id, p.presentacion, p.precio]);
+      }
+
+      await client.query('COMMIT');
+      return await this.getProductById(id); // para devolver el actualizado
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+  
+  async updateField(id: number, field: string, value: any): Promise<Product | null> {
+    const client = await pool.connect();
+    const allowedFields = [
+      'name', 'category', 'presentation', 'units',
+      'expiration_date', 'description', 'active_ingredient',
+      'brand', 'image'
+    ];
+
+    if (!allowedFields.includes(field)) {
+      throw new Error(`Campo no permitido: ${field}`);
     }
 
-    await client.query('COMMIT');
-    return await this.getProductById(id); // para devolver el actualizado
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
+    try {
+      await client.query('BEGIN');
+
+      const updateQuery = `UPDATE products SET ${field} = $1 WHERE id = $2`;
+      const result = await client.query(updateQuery, [value, id]);
+
+      if (result.rowCount === 0) {
+        await client.query('ROLLBACK');
+        return null; // Producto no encontrado
+      }
+
+      await client.query('COMMIT');
+      return await this.getProductById(id);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
-}
+
+
   async decreaseStock(client: any, productId: number, quantity: number) {
     await client.query(
       `UPDATE products SET stock = stock - $1 WHERE id = $2 AND stock >= $1`,
