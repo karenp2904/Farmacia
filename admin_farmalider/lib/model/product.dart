@@ -2,12 +2,12 @@ import 'package:intl/intl.dart';
 
 class Product {
   final int id;
-  final String name;
+  String name;
   final String category;
   final String presentation;
-  final int units;
+  int units;
   final  List<Map<String, dynamic>>  presentation_prices;  // Lista de precios con etiquetas
-  final DateTime? expirationDate;
+  DateTime? expirationDate;
   final String brand;
   final String activeIngredient;
   final String description;

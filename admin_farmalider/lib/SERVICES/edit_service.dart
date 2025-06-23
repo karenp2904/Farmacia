@@ -62,4 +62,31 @@ class EditService {
       throw Exception('Error al verificar stock: ${response.body}');
     }
   }
+
+  Future<bool> updateField(int productId, String field, dynamic value) async {
+    try {
+      final url = Uri.parse('$baseUrl/products/update/field');
+      print('ID: $productId, Field: $field, Value: $value');
+
+      final body = jsonEncode({
+        'id': productId,
+        'field': field,
+        'value': value,
+      });
+
+      final response = await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+
+      print('[UPDATE FIELD] Status: ${response.statusCode}');
+      print('[UPDATE FIELD] Body: ${response.body}');
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print('[UPDATE FIELD ERROR] $e');
+      return false;
+    }
+  }
 }

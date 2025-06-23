@@ -51,7 +51,11 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
         ),
       );
 
-      //await WhatsappService.sendInvoice(phone, pdfFilePath);
+      await WhatsappService.shareInvoiceToWhatsapp(
+        pdfFilePath: pdfFilePath,
+        phoneNumber: phone,
+        countryCode: '57', // por defecto es Colombia, pero puedes poner '52' (México), etc.
+      );
       /*
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Factura generada y enviada por WhatsApp.')),
