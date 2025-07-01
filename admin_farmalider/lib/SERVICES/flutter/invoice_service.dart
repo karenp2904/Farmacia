@@ -23,6 +23,7 @@ class InvoiceService {
 
     final logoBytes = await rootBundle.load('assets/images/logo.png');
     final logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
+    final currencyFormat = NumberFormat('#,###', 'es_CO');
 
     pdf.addPage(
       pw.Page(
@@ -32,75 +33,93 @@ class InvoiceService {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Center(child: pw.Image(logoImage, height: 45)),
-              pw.SizedBox(height: 5),
-              pw.Center(child: pw.Text('FARMALÍDER', style: pw.TextStyle(fontWeight: pw.FontWeight.bold))),
-              pw.Center(child: pw.Text('NIT: 900123456-7')),
-              pw.Center(child: pw.Text('Calle 26A #21D-58, Girón')),
-              pw.Center(child: pw.Text('Tel: 320 329 7486')),
-              pw.Center(child: pw.Text(formattedDate, style: pw.TextStyle(fontSize: 9))),
-              pw.SizedBox(height: 10),
+              // Encabezado
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                children: [
+                  pw.Image(logoImage, height: 50),
+                  pw.SizedBox(height: 5),
+                  pw.Text('FARMALÍDER', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                  pw.Text('NIT: 900123456-7', style: pw.TextStyle(fontSize: 10)),
+                  pw.Text('Calle 26A #21D-58, Girón', style: pw.TextStyle(fontSize: 10)),
+                  pw.Text('Tel: 320 329 7486', style: pw.TextStyle(fontSize: 10)),
+                  pw.Text(formattedDate, style: pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
+                ],
+              ),
+              pw.SizedBox(height: 8),
 
-              pw.Divider(thickness: 1),
-              pw.Center(child: pw.Text('FACTURA', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
-              pw.Divider(thickness: 1),
-
-              _textLine('Cliente', name),
-              _textLine('NIT / RFC', rfc),
-              _textLine('Correo', email),
-              _textLine('Dirección', address),
-              _textLine('Teléfono', phone),
-              _textLine('Pago', paymentMethod),
+              // Info del cliente
+              pw.Container(
+                padding: const pw.EdgeInsets.all(6),
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: PdfColors.grey),
+                  borderRadius: pw.BorderRadius.circular(4),
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    _textLine('Cliente', name),
+                    _textLine('NIT / RFC', rfc),
+                    _textLine('Correo', email),
+                    _textLine('Dirección', address),
+                    _textLine('Teléfono', phone),
+                    _textLine('Pago', paymentMethod),
+                  ],
+                ),
+              ),
               pw.SizedBox(height: 8),
 
               pw.Text('Detalle de productos:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 4),
 
-              pw.Table.fromTextArray(
-                headers: ['Producto', 'Pres.', 'Cant.', 'P.Unit', 'Total'],
-                headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
-                cellStyle: pw.TextStyle(fontSize: 8),
-                headerDecoration: pw.BoxDecoration(color: PdfColors.grey300),
-                data: products.map((p) => [
-                  p.name,
-                  p.presentation,
-                  p.units.toString(),
-                  '\$${p.price.toStringAsFixed(2)}',
-                  '\$${(p.units * p.price).toStringAsFixed(2)}',
-                ]).toList(),
-                columnWidths: {
-                  0: pw.FlexColumnWidth(3),
-                  1: pw.FlexColumnWidth(1.2),
-                  2: pw.FlexColumnWidth(1),
-                  3: pw.FlexColumnWidth(1.5),
-                  4: pw.FlexColumnWidth(1.5),
-                },
-                cellAlignments: {
-                  0: pw.Alignment.centerLeft,
-                  1: pw.Alignment.center,
-                  2: pw.Alignment.center,
-                  3: pw.Alignment.centerRight,
-                  4: pw.Alignment.centerRight,
-                },
+              // Tabla de productos
+              pw.Table(
+                border: pw.TableBorder.all(color: PdfColors.grey300),
+                children: [
+                  pw.TableRow(
+                    decoration: pw.BoxDecoration(color: PdfColors.grey300),
+                    children: [
+                      _cell('Producto', bold: true),
+                      _cell('Pres.', bold: true),
+                      _cell('Cant.', bold: true),
+                      _cell('P.Unit', bold: true),
+                      _cell('Total', bold: true),
+                    ],
+                  ),
+                  ...products.map((p) => pw.TableRow(
+                    children: [
+                      _cell(p.name),
+                      _cell(p.presentation),
+                      _cell('${p.units}'),
+                      _cell('\$${currencyFormat.format(p.price)}'),
+                      _cell('\$${currencyFormat.format(p.units * p.price)}'),
+                    ],
+                  )),
+                ],
               ),
 
+              pw.SizedBox(height: 6),
               pw.Divider(thickness: 1),
+
+              // Total
               pw.Align(
                 alignment: pw.Alignment.centerRight,
                 child: pw.Text(
-                  'TOTAL: \$${total.toStringAsFixed(2)}',
+                  'TOTAL: \$${currencyFormat.format(total)}',
                   style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold),
                 ),
               ),
               pw.SizedBox(height: 10),
 
-              pw.Center(child: pw.Text('Gracias por su compra', style: pw.TextStyle(fontSize: 9))),
-              pw.Center(child: pw.Text('www.farmalider.com', style: pw.TextStyle(fontSize: 9))),
+              pw.Center(
+                child: pw.Text('Gracias por su compra', style: pw.TextStyle(fontSize: 9)),
+              ),
             ],
           );
         },
       ),
     );
+
 
     final directory = await getApplicationDocumentsDirectory();
     final file = File('${directory.path}/factura_${DateTime.now().millisecondsSinceEpoch}.pdf');
@@ -115,3 +134,14 @@ class InvoiceService {
     );
   }
 }
+
+pw.Widget _cell(String text, {bool bold = false}) {
+  return pw.Padding(
+    padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+    child: pw.Text(
+      text,
+      style: pw.TextStyle(fontSize: 9, fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal),
+    ),
+  );
+}
+

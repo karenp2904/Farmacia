@@ -2,6 +2,7 @@ import 'package:admin_farmalider/model/productToPay.dart';
 import 'package:flutter/material.dart';
 import 'package:admin_farmalider/SERVICES/billing_service.dart';
 import 'package:admin_farmalider/pages/billing/InvoiceDataWidget.dart';
+import 'package:intl/intl.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -21,6 +22,8 @@ class _CartPageState extends State<CartPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currencyFormat = NumberFormat('#,###', 'es_CO');
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Carrito de compras',style: TextStyle(color: Colors.white),),
@@ -57,7 +60,7 @@ class _CartPageState extends State<CartPage> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text('Presentación: ${product.presentation}'),
-                                  Text('\$${product.price.toStringAsFixed(2)} c/u'),
+                                  Text('\$${currencyFormat.format(product.price)} c/u'),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -88,7 +91,7 @@ class _CartPageState extends State<CartPage> {
                                     ],
                                   ),
                                   Text(
-                                    'Subtotal: \$${subtotal.toStringAsFixed(2)}',
+                                    'Subtotal: \$${currencyFormat.format(subtotal)}',
                                     style: const TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                 ],
@@ -110,7 +113,7 @@ class _CartPageState extends State<CartPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        'Total: \$${_calculateTotal().toStringAsFixed(2)}',
+                        'Total: \$${currencyFormat.format(_calculateTotal())}',
                         style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 12),

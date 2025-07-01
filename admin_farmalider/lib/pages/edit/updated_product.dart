@@ -19,18 +19,24 @@ class UpdateProductPage extends StatefulWidget {
 
 class _UpdateProductPageState extends State<UpdateProductPage> {
   late Product editableProduct;
-  final _dateController = TextEditingController();
+  TextEditingController _dateController = TextEditingController();
   final EditService _editService = EditService();
 
   @override
   void initState() {
     super.initState();
-    editableProduct = widget.product;
-    if (editableProduct.expirationDate != null) {
-      _dateController.text = DateFormat(
-        'yyyy-MM-dd',
-      ).format(editableProduct.expirationDate!);
-    }
+     editableProduct = widget.product;
+    _dateController = TextEditingController(
+      text: editableProduct.expirationDate != null
+          ? DateFormat('yyyy-MM-dd').format(editableProduct.expirationDate!)
+          : '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _dateController.dispose();
+    super.dispose();
   }
 
   Future<void> _updateField(String field, dynamic value) async {
@@ -100,34 +106,59 @@ class _UpdateProductPageState extends State<UpdateProductPage> {
                   ),
                   onSave: () => _updateField('units', editableProduct.units),
                 ),
+              
             _buildSection(
               title: 'Fecha de Vencimiento',
-              child: TextFormField(
-                controller: _dateController,
-                readOnly: true,
-                decoration: InputDecoration(labelText: 'Selecciona la fecha'),
+              child: GestureDetector(
                 onTap: () async {
-                  DateTime? picked = await showDatePicker(
+                  FocusScope.of(context).unfocus();
+
+                  DateTime now = DateTime.now();
+                  DateTime defaultDate = editableProduct.expirationDate ?? now;
+
+                  // Si la fecha es anterior a hoy, usamos hoy como valor seguro
+                  if (defaultDate.isBefore(now)) {
+                    defaultDate = now;
+                  }
+
+                  final DateTime? picked = await showDatePicker(
                     context: context,
-                    initialDate:
-                        editableProduct.expirationDate ?? DateTime.now(),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime.now().add(Duration(days: 365 * 10)),
+                    initialDate: defaultDate,
+                    firstDate: now,
+                    lastDate: DateTime(now.year + 10),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          useMaterial3: true,
+                          colorScheme: ColorScheme.light(
+                            primary: Colors.green.shade700,
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
                   );
+
                   if (picked != null) {
                     setState(() {
                       editableProduct.expirationDate = picked;
-                      _dateController.text = DateFormat(
-                        'yyyy-MM-dd',
-                      ).format(picked);
+                      _dateController.text =
+                          DateFormat('yyyy-MM-dd').format(picked);
                     });
-                    await _updateField('expirationDate', _dateController.text);
                   }
                 },
+                child: AbsorbPointer(
+                  child: TextFormField(
+                    controller: _dateController,
+                    decoration:
+                        const InputDecoration(labelText: 'Selecciona la fecha'),
+                    readOnly: true,
+                  ),
+                ),
               ),
-              onSave:
-                  () => _updateField('expirationDate', _dateController.text),
+              onSave: () => _updateField('expiration_date', _dateController.text),
             ),
+
             _buildSection(
               title: 'Imagen (toca para cambiar)',
               child:

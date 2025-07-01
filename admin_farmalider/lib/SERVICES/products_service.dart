@@ -16,6 +16,16 @@ class ProductService {
       throw Exception('Error al cargar productos');
     }
   }
+
+  String getImageUrl(String? imageName) {
+    const baseUrl = 'http://192.168.20.71:3000';
+    if (imageName == null || imageName.isEmpty) {
+      return '$baseUrl/products/image?filename=default.png';
+    }
+    return '$baseUrl/products/image?filename=$imageName';
+  }
+
+
   
   Future<List<Product>> searchProductsByName(String query) async {
     try {

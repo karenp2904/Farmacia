@@ -1,5 +1,7 @@
+import 'package:admin_farmalider/SERVICES/products_service.dart';
 import 'package:flutter/material.dart';
 import 'package:admin_farmalider/model/product.dart';
+import 'package:intl/intl.dart';
 
 class ProductCard extends StatefulWidget {
   final Product product;
@@ -35,14 +37,15 @@ class _ProductCardState extends State<ProductCard> {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = widget.product.image ?? '';
+    final imageUrl = ProductService().getImageUrl(widget.product.image);
 
     // Obtener el precio correspondiente a la presentación seleccionada
     final priceData = widget.product.presentation_prices.firstWhere(
       (item) => item['presentacion'] == selectedPresentation,
       orElse: () => {'precio': 0.0},
     );
-    final price = (priceData['precio'] as num).toDouble();
+    final price = (priceData['precio'] as num);
+    final formattedPrice = NumberFormat('#,###', 'es_CO').format(price);
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -108,10 +111,11 @@ class _ProductCardState extends State<ProductCard> {
                       },
                       items: widget.product.presentation_prices.map<DropdownMenuItem<String>>((item) {
                         final presentacion = item['presentacion'] as String;
-                        final precio = (item['precio'] as num).toDouble();
+                        final precio = item['precio'] as num;
+                        final formattedPrecio = NumberFormat('#,###', 'es_CO').format(precio); // ✅ Mueve el formateo aquí
                         return DropdownMenuItem<String>(
                           value: presentacion,
-                          child: Text('$presentacion - \$${precio.toStringAsFixed(2)}'),
+                          child: Text('$presentacion - \$${formattedPrecio}'),
                         );
                       }).toList(),
                     ),

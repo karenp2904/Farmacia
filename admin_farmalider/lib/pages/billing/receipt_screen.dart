@@ -1,5 +1,6 @@
 import 'package:admin_farmalider/pages/billing/cart_page.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:admin_farmalider/model/productToPay.dart';
 
@@ -22,6 +23,7 @@ class ReceiptScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now().toUtc().subtract(const Duration(hours: 5));
+    final currencyFormat = NumberFormat('#,###', 'es_CO');
 
     return Scaffold(
       backgroundColor: Colors.grey[200],
@@ -80,7 +82,7 @@ class ReceiptScreen extends StatelessWidget {
                           Expanded(flex: 4, child: Text(p.name, style: const TextStyle(fontWeight: FontWeight.w500))),
                           Expanded(flex: 2, child: Text(p.presentation, textAlign: TextAlign.center)),
                           Expanded(flex: 1, child: Text('${p.units}', textAlign: TextAlign.center)),
-                          Expanded(flex: 2, child: Text('\$${(p.units * p.price).toStringAsFixed(2)}', textAlign: TextAlign.right)),
+                          Expanded(flex: 2, child: Text('\$${currencyFormat.format(p.units * p.price)}', textAlign: TextAlign.right)),
                         ],
                       ),
                     );
@@ -93,7 +95,7 @@ class ReceiptScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text("Total a pagar:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                  Text("\$${total.toStringAsFixed(2)}", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green.shade700)),
+                  Text("\$${currencyFormat.format(total)}", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green.shade700)),
                 ],
               ),
 

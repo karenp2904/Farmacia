@@ -50,17 +50,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             const SizedBox(height: 20),
             _buildProductName(),
             const SizedBox(height: 10),
-            BrandWidget(brand: widget.product.brand),
+           Row(
+              children: [
+                Expanded(child: _cardWrapper(BrandWidget(brand: widget.product.brand))),
+                const SizedBox(width: 10),
+                Expanded(child: _cardWrapper(CategoryWidget(category: widget.product.category))),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(child: _cardWrapper(ExpirationDateWidget(expirationDate: widget.product.expirationDate))),
+                const SizedBox(width: 10),
+                Expanded(child: _cardWrapper(ActiveIngredientWidget(activeIngredient: widget.product.activeIngredient))),
+              ],
+            ),
             const SizedBox(height: 20),
 
-            CategoryWidget(category: widget.product.category),
-            const SizedBox(height: 10),
-            ExpirationDateWidget(expirationDate: widget.product.expirationDate),
-            const SizedBox(height: 15),
-            ActiveIngredientWidget(
-              activeIngredient: widget.product.activeIngredient,
-            ),
-            
+
             const SizedBox(height: 20),
             _buildPriceListSection(),
             const SizedBox(height: 20),
@@ -152,14 +159,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 });
               }
             },
-            items:
-                presentations.map<DropdownMenuItem<String>>((String value) {
-                  double price = _getPriceForPresentation(value);
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text('$value - \$${price.toStringAsFixed(2)}'),
-                  );
-                }).toList(),
+            items: presentations.map<DropdownMenuItem<String>>((String value) {
+              final price = _getPriceForPresentation(value); // ✅ Usa el valor actual del ciclo
+              final formattedPrice = NumberFormat('#,###', 'es_CO').format(price);
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text('$value - \$${formattedPrice}'),
+              );
+            }).toList(),
+
           ),
         ],
       ),
@@ -171,8 +179,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       (element) => element['presentacion'] == presentation,
       orElse: () => {'precio': 0.0, 'presentacion': presentation},
     );
-    return priceData['precio'] ?? 0.0;
+
+    final precioRaw = priceData['precio'];
+    return (precioRaw as num).toDouble();
   }
+
+
+
 
   Widget _buildDescriptionSection() {
     return Container(
@@ -240,4 +253,25 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       ),
     );
   }
+
+  Widget _cardWrapper(Widget child) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.shade100,
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+
 }
+

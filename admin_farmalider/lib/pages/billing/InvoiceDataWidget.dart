@@ -3,6 +3,7 @@ import 'package:admin_farmalider/SERVICES/flutter/invoice_service.dart';
 import 'package:admin_farmalider/SERVICES/flutter/whatsApp.dart';
 import 'package:admin_farmalider/pages/billing/receipt_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class InvoiceScreen extends StatefulWidget {
   @override
@@ -18,6 +19,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
   String phone = '';
   String paymentMethod = 'Efectivo';
   bool isProcessing = false;
+  final currencyFormat = NumberFormat('#,###', 'es_CO');
 
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
