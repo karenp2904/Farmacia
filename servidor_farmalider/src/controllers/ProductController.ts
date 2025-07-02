@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { Product } from '../models/Product';
 import ProductService from '../services/ProductService';
+import path from 'path';
+import fs from 'fs';
 
 class ProductController {
   async getAllProducts(_req: Request, res: Response): Promise<void> {
@@ -26,6 +28,26 @@ class ProductController {
       res.status(500).send('Error al obtener el producto');
     }
   }
+
+  async getImage(req: Request, res: Response): Promise<void> {
+    const filename = req.query.filename as string;
+
+    if (!filename) {
+      res.status(400).send('Nombre de archivo requerido');
+      return;
+    }
+
+    const imagePath = path.join(__dirname, '../images', filename);
+    console.log(imagePath);
+    // Verifica si el archivo existe
+    if (!fs.existsSync(imagePath)) {
+      res.status(404).send('Imagen no encontrada');
+      return;
+    }
+
+    res.sendFile(imagePath);
+  }
+
 
   async createProduct(req: Request, res: Response): Promise<void> {
     const product: Product = req.body;

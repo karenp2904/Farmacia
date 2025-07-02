@@ -13,6 +13,7 @@ router.get('/products/search', ProductController.searchProduct);
 router.get('/products/category/:category', ProductController.getProductsByCategory);
 router.put('/products/update/field', ProductController.updateField);
 router.post('/products/create', ProductController.createProduct);
+router.get('/products/image', ProductController.getImage);
 
 // Rutas dinámicas después
 router.get('/products/:id', ProductController.getProductById);
